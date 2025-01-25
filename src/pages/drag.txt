@@ -1,0 +1,251 @@
+import React, { useState } from 'react';
+import { Trash2, Grip } from 'lucide-react';
+
+const DragnDrop = () => {
+  // State to manage tasks in different columns
+  const [tasks, setTasks] = useState({
+    todo: [],
+    doing: [],
+    done: []
+  });
+
+  // State for the input field
+  const [newTask, setNewTask] = useState('');
+
+  // Handle input change
+  const handleInputChange = (e) => {
+    setNewTask(e.target.value);
+  };
+
+  // Add a new task
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    if (newTask.trim()) {
+      setTasks(prevTasks => ({
+        ...prevTasks,
+        todo: [...prevTasks.todo, { 
+          id: Date.now(), 
+          text: newTask.trim(),
+          draggable: true
+        }]
+      }));
+      setNewTask(''); // Clear input after adding
+    }
+  };
+
+  // Handle drag start
+  const handleDragStart = (e, task, sourceColumn) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ 
+      task, 
+      sourceColumn 
+    }));
+  };
+
+  // Handle drag over to allow dropping
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  // Handle drop to move tasks between columns//
+  const handleDrop = (e, targetColumn) => {
+    e.preventDefault();
+    const droppedData = JSON.parse(e.dataTransfer.getData('text/plain'));
+    const { task, sourceColumn } = droppedData;
+
+    // Remove from source column
+    setTasks(prevTasks => {
+      const updatedTasks = {...prevTasks};
+      updatedTasks[sourceColumn] = updatedTasks[sourceColumn].filter(t => t.id !== task.id);
+      
+      // Add to target column
+      updatedTasks[targetColumn] = [...updatedTasks[targetColumn], task];
+      
+      return updatedTasks;
+    });
+  };
+
+  // Delete a task
+  const handleDeleteTask = (columnKey, taskId) => {
+    setTasks(prevTasks => ({
+      ...prevTasks,
+      [columnKey]: prevTasks[columnKey].filter(task => task.id !== taskId)
+    }));
+  };
+
+  // Render column
+  const renderColumn = (title, columnKey, emoji) => {
+    return (
+      <div 
+        className='h-96 w-96 border-2 border-gray-300 flex flex-col p-4'
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, columnKey)}
+      >
+        <h2 className='text-2xl mt-2 mb-4 font-bold'>{title} {emoji}</h2>
+        <hr className='font-extrabold py-2 m-0'/>
+        <ul className='space-y-2'> 
+          {tasks[columnKey].map((task) => (
+            <li 
+              key={task.id}
+              className='flex items-center justify-between bg-gray-700 p-2 rounded'
+              draggable
+              onDragStart={(e) => handleDragStart(e, task, columnKey)}
+            >
+              <div className='flex items-center'>
+                <Grip className='mr-2 text-gray-400 cursor-move' size={16} />
+                <span>{task.text}</span>
+              </div>
+              <Trash2 
+                className='text-red-500 cursor-pointer hover:text-red-700' 
+                size={16} 
+                onClick={() => handleDeleteTask(columnKey, task.id)}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  return (
+    <>
+    <div className='min-h-screen justify-center items-center text-white bg-black'>
+      <div className='p-4'>
+          <h1 className='text-3xl font-bold text-center'>Drag and Drop Todo List 📒</h1>
+      </div>
+      <div className='flex flex-row place-content-center m-10 gap-6'>
+        <form onSubmit={handleAddTask} className='flex flex-row place-content-center'>
+          <input  
+            className="w-80 px-2 mx-4 bg-gray-800 py-2 rounded-4xl" 
+            type="text" 
+            value={newTask}
+            onChange={handleInputChange}
+            placeholder='Add a task....'
+          />
+          <button
+            type='submit'
+            className='bg-blue-950 py-2 rounded-4xl px-2 text-sm font-bold'>
+            Add Task
+          </button>
+        </form>
+      </div>
+      <div className='flex flex-row place-content-center m-10 gap-6'>
+        {renderColumn('Have to do', 'todo', '🎯')}
+        {renderColumn('Doing', 'doing', '💪')}
+        {renderColumn('Done', 'done', '😴')}
+      </div>
+    </div>
+    </>
+  );
+};
+
+export default DragnDrop;
+
+
+
+/// VERSION TWO----///
+
+import React, { useState } from 'react'
+import { GripVertical, Trash } from 'lucide-react'
+
+const DragnDrop = () => {
+  const [tasks, setTasks] = useState([])
+  const [text, setText] = useState('')
+
+  const handleAddTask = () => {
+    if(text.trim() === "") return;
+    setTasks([...tasks, { 
+      id: Date.now(), 
+      text: text.trim(),
+      column: 'todo' 
+    }]);
+    setText('');
+  }
+
+  const handleDelete = (id) => {
+    const filteredTasks = tasks.filter(task => task.id !== id);
+    setTasks(filteredTasks);
+  }
+
+  const handleDragStart = (e, task) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(task));
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  }
+
+  const handleDrop = (e, targetColumn) => {
+    e.preventDefault();
+    const droppedTask = JSON.parse(e.dataTransfer.getData('text/plain'));
+    
+    const updatedTasks = tasks.map(task => 
+      task.id === droppedTask.id ? {...task, column: targetColumn} : task
+    );
+
+    setTasks(updatedTasks);
+  }
+
+  const renderColumn = (columnName, emoji) => {
+    const columnTasks = tasks.filter(task => task.column === columnName);
+
+    return (
+      <div 
+        className='h-96 w-96 border-2 border-gray-300 flex flex-col p-4'
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, columnName)}
+      >
+        <h2 className='text-2xl mt-2 mb-4 font-bold'>{columnName} {emoji}</h2>
+        <hr className='font-extrabold py-1 m-0'/>
+        <ul> 
+          {columnTasks.map((task) => (
+            <li 
+              key={task.id}
+              className="flex justify-between bg-[rgba(75,85,99,0.75)] rounded-r-md px-2 py-2 my-2" 
+              draggable
+              onDragStart={(e) => handleDragStart(e, task)}
+            >
+              {task.text}
+              <div className='space-x-1'>
+                <button onClick={() => handleDelete(task.id)} className='text-red-600'>
+                  <Trash/>
+                </button>
+                <button className='hover:cursor-grab'>
+                  <GripVertical />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  return (
+    <div className='h-screen justify-center items-center text-white bg-black'>
+      <div className='p-4'>
+        <h1 className='text-3xl font-bold text-center'>Drag and Drop Todo List 📒</h1>
+      </div>
+      <div className='flex flex-row place-content-center m-10 '>
+        <input  
+          className="w-80 px-2 mx-4 bg-gray-800 py-2 rounded-4xl" 
+          type="text" 
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder='add a task....'
+        />
+        <button
+          onClick={handleAddTask}
+          className='bg-blue-950 py-2 rounded-4xl px-2 text-sm font-bold'>
+          add task
+        </button>
+      </div>
+      <div className='flex flex-row place-content-center m-10 gap-6'>
+        {renderColumn('todo', '🎯')}
+        {renderColumn('doing', '💪')}
+        {renderColumn('done', '😴')}
+      </div>
+    </div>
+  )
+}
+
+export default DragnDrop
