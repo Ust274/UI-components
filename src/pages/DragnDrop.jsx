@@ -76,7 +76,7 @@ const renderColumn = (columnName, emoji) =>{
 
 return (
   <>
-  <div className='h-screen snap-start justify-center items-center text-white bg-black scroll-smooth'>
+  <div className='h-screen snap-start justify-center items-center text-white bg-gradient-to-br from-black to-blue-950 scroll-smooth'>
     <div className='p-4'>
         <h1 className='text-3xl font-bold text-center'>Drag and Drop Todo List 📒</h1>
     </div>

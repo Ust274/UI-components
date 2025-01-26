@@ -72,7 +72,7 @@ export const List = ({List}) => {
     <>
     <div className='grid grid-cols-3 space-x-6 space-y-4'>
         {List.map((List) => 
-        <div key={List.id} className='h-60 w-60 flex flex-col mt-2 px-2 py-3 rounded-lg bg-gray-500 text-white space-x-3 hover:bg-blue-950' >
+        <div key={List.id} className='h-60 w-60 flex flex-col mt-2 px-2 py-3 rounded-lg bg-gradient-to-br from-gray-400 via-gray-600 to-gray-800 text-white space-x-3 hover:bg-blue-950 transition-transform ease-in-out duration-300 hover:scale-110' >
             <h2 className='text-white text-2xl font-semibold'>{List.name}</h2>
             <p className='mt-2 text-sm text-black font-semibold'>{List.category}</p> <br/>
             <hr />
